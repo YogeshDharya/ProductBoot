@@ -1,0 +1,4 @@
+4 LATER: 
+	o we can include Lazy Loading in situations when Product entity is linked with other entities like reviews 
+	
+	Remember if Eager initialization is performed by Application Context spring container then lazy initialization is performed by BeanFactory spring container ? 
