@@ -1,12 +1,8 @@
 package com.example.MyDB.services;
 
-import java.util.List;
-import java.util.Optional;
-
 import org.springframework.http.ResponseEntity;
 
-import com.example.MyDB.dto.ProductDto;
-import com.example.MyDB.models.Product;
+import com.example.MyDB.utility.CustomRequest;
 
 import jakarta.validation.Valid;
 
@@ -16,7 +12,9 @@ public interface ProductService {
 
 	ResponseEntity<?> getProductById(Long productId);
 
-	ResponseEntity<?> saveProduct(@Valid Product product);
+	ResponseEntity<?> saveProduct(@Valid CustomRequest request);
 
 	ResponseEntity<?> deleteProduct(Long productId);
+	
+	ResponseEntity<?> changeProductName(CustomRequest request);
 }

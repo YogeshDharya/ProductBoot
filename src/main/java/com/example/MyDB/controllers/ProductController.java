@@ -1,65 +1,79 @@
 package com.example.MyDB.controllers;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Optional;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.example.MyDB.dto.ProductMapper;
-import com.example.MyDB.models.Product;
-import com.example.MyDB.serviceImpl.ProductServiceImpl;
 import com.example.MyDB.services.ProductService;
 import com.example.MyDB.utility.CustomRequest;
-import com.example.MyDB.utility.CustomResponse;
-import com.example.MyDB.utility.IConstant;
 
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 
 @RestController
 @Validated
+@Tag(name = "Product Controller", description = "APIs for managing products")
 public class ProductController {
+
 	private final ProductService serviceInterface;
-	private  ProductMapper mapper;
-	private  IConstant iConstant;
-	private CustomRequest productRequest;
-	private CustomResponse productResponse;
-	private static final Logger logger = LoggerFactory.getLogger(ProductServiceImpl.class);
+
 	@Autowired
 	public ProductController(ProductService serviceImplObject) {
 		this.serviceInterface = serviceImplObject;
 	}
 
+	@Operation(summary = "Get all products", description = "Retrieve a list of all products")
+	@ApiResponses(value = {
+			@ApiResponse(responseCode = "200", description = "Successfully retrieved list of products", content = @Content(schema = @Schema(implementation = CustomRequest.class))),
+			@ApiResponse(responseCode = "404", description = "No products found",content= @Content )})
 	@GetMapping("/products")
-		public ResponseEntity<?> getAllProducts() {
-		return  serviceInterface.getAllProducts();
+	public ResponseEntity<?> getAllProducts() {
+		return serviceInterface.getAllProducts();
 	}
-
-	@PostMapping("/products")
-	public ResponseEntity<?> saveProduct(@Valid @RequestBody CustomRequest requestEntity) {
-		  Product product = mapper.mapDtoToEntity(requestEntity);
-		  return serviceInterface.saveProduct(product);
-		 }
-
-
+	@Operation(summary="Changes the name of an existing product")
+	@ApiResponses(value = {
+			@ApiResponse(responseCode = "200", description = "Successfully Changed Product Name", content= @Content(schema= @Schema(implementation = CustomRequest.class))),
+			@ApiResponse(responseCode = "404", description= "Product Not Found", content = @Content)})
+	public ResponseEntity<?> changeProductName(CustomRequest request){
+		return serviceInterface.changeProductName(request);
+	}
+	@Operation(summary = "Get a product by ID", description = "Retrieve a product by its ID")
+	@ApiResponses(value = {
+			@ApiResponse(responseCode = "200", description = "Successfully retrieved product", content = @Content(schema = @Schema(implementation = CustomRequest.class))),
+			@ApiResponse(responseCode = "404", description = "Product not found", content = @Content) })
 	@GetMapping("/products/{id}")
-	public ResponseEntity<?> getProduct(@Valid  @PathVariable Long productId) {
-			return serviceInterface.getProductById(productId);
+	public ResponseEntity<?> getProduct(@Valid @RequestParam Long productId) {
+		return serviceInterface.getProductById(productId);
 	}
 	
+	
+	
+	@Operation(summary = "Save a product", description = "Save a new product to the database")
+	@ApiResponses(value = {
+			@ApiResponse(responseCode = "201", description = "Product successfully saved", content = @Content(schema = @Schema(implementation = CustomRequest.class))),
+			@ApiResponse(responseCode = "400", description = "Invalid input", content = @Content) })
+	@PostMapping("/products")
+	public ResponseEntity<?> saveProduct(@Valid @RequestBody CustomRequest requestEntity) {
+		return serviceInterface.saveProduct(requestEntity);
+	}
 
+	@Operation(summary = "Delete a product by ID", description = "Delete a product from the database by its ID")
+	@ApiResponses(value = {
+			@ApiResponse(responseCode = "200", description = "Product successfully deleted", content = @Content),
+			@ApiResponse(responseCode = "404", description = "Product not found", content = @Content) })
 	@DeleteMapping("/products/{id}")
-	public ResponseEntity<?> deleteProduct(@PathVariable Long productId) {
+	public ResponseEntity<?> deleteProduct(@RequestParam Long productId) {
 		return serviceInterface.deleteProduct(productId);
 	}
 }

@@ -4,7 +4,7 @@ import com.example.MyDB.models.Product;
 import com.example.MyDB.utility.*;
 
 public class ProductMapper {
-	public Product mapDtoToEntity(CustomRequest requestEntity) {
+	public static Product mapDtoToEntity(CustomRequest requestEntity) {
 		//Empty entity constructor for proxy instantiation 
 		Product product = new Product();
 		product.setName(requestEntity.getName()) ;
@@ -12,7 +12,7 @@ public class ProductMapper {
 		product.setPrice(requestEntity.getPrice());
 		return product;
 	}
-	public CustomResponse mapEntityToCustomResponse(Product product) {
+	public static CustomResponse mapEntityToCustomResponse(Product product) {
 		CustomResponse response = new CustomResponse(
 				product.getId(),
 				product.getName(),
@@ -20,6 +20,14 @@ public class ProductMapper {
 				product.getPrice()
 				);
 		return response;
+	}
+	public static Product mapCustomRequestToEntity(CustomRequest request) {
+		Product product= new Product(
+				request.getName(),
+				request.getDescription(),
+				request.getPrice()
+				);
+		return product;
 	}
 //		Product product = new Product(
 //				productdto.getName(),
