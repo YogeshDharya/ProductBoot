@@ -1,12 +1,11 @@
-package com.example.MyDB.utility;
+package com.example.MyDB.dto;
 
-public class CustomResponse {
-//Body, status, Headers 
+public class ProductResponse {
 	private Long id;
 	private String name;
 	private String description;
 	private Double price;
-	public CustomResponse(Long id, String name, String description, Double price) {
+	public ProductResponse(Long id, String name, String description, Double price) {
         this.id = id;
         this.name = name;
         this.description = description;

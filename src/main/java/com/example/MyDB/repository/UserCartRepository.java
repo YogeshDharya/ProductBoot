@@ -5,9 +5,10 @@ import java.util.Optional;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
-import com.example.MyDB.models.Product;
+import com.example.MyDB.models.UserCart;
 
 @Repository
-public interface ProductRepository extends JpaRepository<Product, Long> {
-	Optional<Product> findById(Long id);
+public interface UserCartRepository extends JpaRepository<UserCart,Long>
+{
+	Optional<UserCart> findById(Long userCartId);
 }
