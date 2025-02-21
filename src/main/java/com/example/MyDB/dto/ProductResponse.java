@@ -1,5 +1,7 @@
 package com.example.MyDB.dto;
 
+import java.util.List;
+
 public class ProductResponse {
 	private Long id;
 	private String name;
@@ -11,7 +13,7 @@ public class ProductResponse {
         this.description = description;
         this.price = price;
     }
-
+	
     public Long getId() { 
     	return id; 
     }

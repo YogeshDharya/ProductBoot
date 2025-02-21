@@ -60,7 +60,7 @@ public class ProductServiceImpl implements ProductService {
 
 	@Override
 	public ResponseEntity<?> saveProduct(ProductRequest request) {
-		Product product = ProductMapper.mapCustomRequestToEntity(request);
+		Product product = ProductMapper.mapProductRequestToEntity(request);
 		logger.info("Initiated saving product: {}", product.getName());
 		try {
 			repository.save(product);

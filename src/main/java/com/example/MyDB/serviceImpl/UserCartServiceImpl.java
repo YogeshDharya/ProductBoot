@@ -1,14 +1,18 @@
 package com.example.MyDB.serviceImpl;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
+import com.example.MyDB.dto.UserCartRequest;
+import com.example.MyDB.dto.UserRequest;
 import com.example.MyDB.exception.InternalServerErrorException;
 import com.example.MyDB.exception.ResourceNotFoundException;
 import com.example.MyDB.models.Product;
@@ -19,16 +23,67 @@ import com.example.MyDB.repository.UserCartRepository;
 import com.example.MyDB.repository.UserRepository;
 import com.example.MyDB.services.UserCartService;
 import com.example.MyDB.utility.IConstant;
+
 @Service
 public class UserCartServiceImpl implements UserCartService{
 	private static final Logger logger = LoggerFactory.getLogger(UserCartServiceImpl.class);
-	private final UserRepository userRepository;
-	private final ProductRepository productRepository;
-	private final UserCartRepository userCartRepository;
-	public UserCartServiceImpl(UserRepository newUserRepository,ProductRepository newProductRepository, UserCartRepository userCartRepository) {
-		this.userRepository = newUserRepository;
-		this.productRepository = newProductRepository;
-		this.userCartRepository = userCartRepository; 
+//	private final UserRepository userRepository;
+//	private final ProductRepository productRepository;
+//	private final UserCartRepository userCartRepository;
+	
+//	@Autowired
+//	public UserCartServiceImpl(UserRepository newUserRepository,ProductRepository newProductRepository, UserCartRepository userCartRepository) {
+//		this.userRepository = newUserRepository;
+//		this.productRepository = newProductRepository;
+//		this.userCartRepository = userCartRepository; 
+//	}
+	
+	@Autowired
+	private UserRepository userRepository;
+
+	@Autowired
+	private  ProductRepository productRepository;
+	
+	@Autowired
+	private  UserCartRepository userCartRepository;
+	
+	
+	
+	public  User mapRequestToUser(UserRequest request) {
+		User usr = new User();
+				usr.setId(request.getId());
+				usr.setName(request.getName());
+				UserCartRequest cartRequest=new UserCartRequest(
+						request.getId(),
+						new ArrayList<>());
+		addUserCart(cartRequest);		
+		return usr;				
+	}
+
+	@Override
+	public UserCart addUserCart(UserCartRequest request) {		
+		User usr = new User();
+		usr.setId(request.getUserId());
+		userRepository.save(usr);
+		UserCart userCart = new UserCart(usr);
+		logger.info("addUser Cart : user cart before saving : {}",userCart);
+		userCartRepository.save(userCart);
+		usr.setCart(userCart);
+		logger.info("add User cart: user before saving {}",usr);
+		userRepository.save(usr);
+		return userCart;
+	}
+	
+	@Override 
+	public UserCart getUserCart(Long userId){
+		logger.info("Fetching User Cart");
+		Optional<UserCart> userCartObj =userCartRepository.findById(userId);
+		if(userCartObj.isPresent()) {
+			logger.info("User Cart was not found");
+			throw new ResourceNotFoundException(IConstant.USER_CART_NOT_FOUND);
+		}
+		logger.info("User cart fetched");
+			return userCartObj.get();
 	}
 	@Override
 	public ResponseEntity<?> getUserCartProduct(Long productId, Long userId){
@@ -38,9 +93,8 @@ public class UserCartServiceImpl implements UserCartService{
 			if(!usrObj.isPresent()) {
 				throw new ResourceNotFoundException(IConstant.USER_NOT_FOUND);
 			}
-			User usr = usrObj.get();
-			UserCart cart = usrObj.get().getCart();
-			Optional<UserCart> cartObj = userCartRepository.findById(cart.getId());
+			Long cartId = usrObj.get().getId();
+			Optional<UserCart> cartObj = userCartRepository.findById(cartId);
 			if(! cartObj.isPresent()){
 				throw new ResourceNotFoundException(IConstant.USER_CART_NOT_FOUND);
 			}
@@ -58,22 +112,20 @@ public class UserCartServiceImpl implements UserCartService{
 			}
 	}
 	@Override
-	 public ResponseEntity<?> addProductToCart(Long product,Long userId) {
+	 public ResponseEntity<?> addProductToCart(UserCartRequest request) {
 		try{
+			Long userId = request.getUserId();
 			Optional<User> usr = userRepository.findById(userId);
 			if(! usr.isPresent()) {
 				throw new ResourceNotFoundException(IConstant.USER_NOT_FOUND);
 			}
 			logger.info("User is present !");
-			UserCart cart = usr.get().getCart();
-			Optional<UserCart> userCartobj= userCartRepository.findById(cart.getId());
-			if(!userCartobj.isPresent()) {
-				throw new ResourceNotFoundException(IConstant.USER_CART_NOT_FOUND);
-			}
-			UserCart userCart = userCartobj.get();
+			User user = usr.get();
+			List<Long> singleProductCart = request.getCartProductIds();
+			UserCart userCart = user.getCart();
 			List<Product> cartProducts = userCart.getProducts();
 			logger.info("Existing user cart: {}",cartProducts);
-			Optional<Product> currProduct=productRepository.findById(product);
+			Optional<Product> currProduct=productRepository.findById(singleProductCart.get(0));
 			if(! currProduct.isPresent()) throw new ResourceNotFoundException(IConstant.PRODUCT_NOT_FOUND);
 			cartProducts.add(currProduct.get());
 			userCartRepository.save(userCart);
@@ -89,7 +141,7 @@ public class UserCartServiceImpl implements UserCartService{
 	}
 	
 	@Override
-	public ResponseEntity<?> deleteProductFromCart(Long productId, Long userId) {
+	public ResponseEntity<?> deleteProductFromCart(Long userId, Long productId){
 		try{
 			Optional<User> usr = userRepository.findById(userId);
 			if(! usr.isPresent()) {
@@ -97,18 +149,12 @@ public class UserCartServiceImpl implements UserCartService{
 			}
 			logger.info("user is present !");
 			UserCart cart = usr.get().getCart();
-			Optional<UserCart> userCartobj= userCartRepository.findById(cart.getId());
-			if(! userCartobj.isPresent()) {
-				logger.warn("We don't have the cart for the user {}",usr.get().getName());
-				throw new ResourceNotFoundException(IConstant.USER_CART_NOT_FOUND);
-			}
-			UserCart userCart = userCartobj.get();
-			logger.info("User cart is also present here it is :{}",userCart);
-			List<Product> cartProducts = userCart.getProducts();
+			logger.info("User cart is also present here it is :{}",cart);
+			List<Product> cartProducts = cart.getProducts();
 			Optional<Product> product = productRepository.findById(productId);
 			if(!product.isPresent()) throw new ResourceNotFoundException(IConstant.PRODUCT_NOT_FOUND);
 			cartProducts.remove(product.get());
-			userCartRepository.save(userCart);
+			userCartRepository.save(cart);
 			logger.info("Product Got removed from user cart, new one is {}");
 			return ResponseEntity.status(HttpStatus.CREATED).build();			
 		}catch(ResourceNotFoundException e) {

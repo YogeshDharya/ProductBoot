@@ -1,8 +1,6 @@
 package com.example.MyDB.dto;
 
-import com.example.MyDB.models.UserCart;
-
-import io.swagger.v3.oas.annotations.media.Schema;
+//import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.NotEmpty;
 
 public class UserRequest {
@@ -10,12 +8,17 @@ public class UserRequest {
 	private Long id;
 	
 	@NotEmpty
-//	@Schema(description="Name of the customer")
+//	@Schema(description="Name of the customer is a required field")
 	private String name;
 	
-//	@Schema(description="Cart, the customer has")
-	private UserCart userCart;
+//	@Schema(description="Cart, the customer has; its Id is a required field")
+	private Long userCartId;
 	
+	public UserRequest(Long id,String name,Long userCartId) {
+		this.id= id;
+		this.name = name;
+		this.userCartId = userCartId;
+	}
 	public Long getId() {
 		return this.id;
 	}
@@ -29,10 +32,10 @@ public class UserRequest {
 	public void setName(String name) {
 		this.name = name;
 	}
-	public UserCart getCart() {
-		return this.userCart;
+	public Long getCartId() {
+		return this.userCartId;
 	}
-	public void setCart(UserCart newCart) {
-		this.userCart = newCart;
+	public void setCartId(Long newCart) {
+		this.userCartId = newCart;
 	}
 }

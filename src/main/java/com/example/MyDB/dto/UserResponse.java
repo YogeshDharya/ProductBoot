@@ -5,12 +5,12 @@ import com.example.MyDB.models.UserCart;
 public class UserResponse {
 	private Long id;
 	private String name;
-	private UserCart userCart;
+	private Long userCartId;
 
-	public UserResponse(Long id, String name, UserCart cart) {
+	public UserResponse(Long id, String name, Long cartId) {
 		this.id = id;
 		this.name = name;
-		this.userCart = cart;
+		this.userCartId = cartId;
 	}
 
 	public Long getId() {
@@ -29,11 +29,11 @@ public class UserResponse {
 		this.name = name;
 	}
 
-	public UserCart getCart() {
-		return this.userCart;
+	public Long getCartId() {
+		return this.userCartId;
 	}
 
-	public void setCart(UserCart newCart) {
-		this.userCart = newCart;
+	public void setCart(Long newCartId) {
+		this.userCartId= newCartId;
 	}
 }
